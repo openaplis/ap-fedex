@@ -1,0 +1,29 @@
+{
+  "name": "ap-fedex",
+  "version": "0.0.1",
+  "description": "ap-fedex",
+  "main": "index.js",
+  "dependencies": {
+    "ap-protobuf": "^0.0.6",
+    "dateformat": "^2.0.0",
+    "grpc": "^1.2.0",
+    "js-base64": "^2.1.9",
+    "mssql": "^3.3.0",
+    "request": "^2.81.0",
+    "xml2js": "^0.4.17"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openaplis/ap-fedex.git"
+  },
+  "author": "Sid Harder",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/openaplis/ap-fedex/issues"
+  },
+  "homepage": "https://github.com/openaplis/ap-fedex#readme"
+}

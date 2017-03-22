@@ -1,0 +1,50 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v9="http://fedex.com/ws/track/v9">
+  <soapenv:Header />
+  <soapenv:Body>
+    <v9:TrackRequest>
+      <v9:WebAuthenticationDetail>
+        <v9:UserCredential>
+          <v9:Key>9AKQLFGu15YA91pZ</v9:Key>
+          <v9:Password>sDY7lb5HCpaNvU2B98PZ6JoUY</v9:Password>
+        </v9:UserCredential>
+      </v9:WebAuthenticationDetail>
+      <v9:ClientDetail>
+        <v9:AccountNumber>235542196</v9:AccountNumber>
+        <v9:MeterNumber>109758384</v9:MeterNumber>
+        <v9:Localization>
+          <v9:LanguageCode>EN</v9:LanguageCode>
+          <v9:LocaleCode>US</v9:LocaleCode>
+        </v9:Localization>
+      </v9:ClientDetail>
+      <v9:TransactionDetail>
+        <v9:CustomerTransactionId />
+        <v9:Localization>
+          <v9:LanguageCode>EN</v9:LanguageCode>
+          <v9:LocaleCode>US</v9:LocaleCode>
+        </v9:Localization>
+      </v9:TransactionDetail>
+      <v9:Version>
+        <v9:ServiceId>trck</v9:ServiceId>
+        <v9:Major>9</v9:Major>
+        <v9:Intermediate>1</v9:Intermediate>
+        <v9:Minor>0</v9:Minor>
+      </v9:Version>
+      <v9:SelectionDetails>
+        <v9:CarrierCode>FDXE</v9:CarrierCode>
+        <v9:PackageIdentifier>
+          <v9:Type>TRACKING_NUMBER_OR_DOORTAG</v9:Type>
+          <v9:Value></v9:Value>
+        </v9:PackageIdentifier>
+        <v9:ShipmentAccountNumber />
+        <v9:SecureSpodAccount />
+        <v9:Destination>
+          <v9:StreetLines></v9:StreetLines>
+          <v9:City></v9:City>
+          <v9:StateOrProvinceCode></v9:StateOrProvinceCode>
+          <v9:PostalCode></v9:PostalCode>
+          <v9:CountryCode></v9:CountryCode>
+        </v9:Destination>
+      </v9:SelectionDetails>
+    </v9:TrackRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

@@ -1,0 +1,145 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAP-ENV:Header/>
+	<SOAP-ENV:Body>
+		<TrackReply xmlns="http://fedex.com/ws/track/v9">
+			<HighestSeverity>SUCCESS</HighestSeverity>
+			<Notifications>
+				<Severity>SUCCESS</Severity>
+				<Source>trck</Source>
+				<Code>0</Code>
+				<Message>Request was successfully processed.</Message>
+				<LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+			</Notifications>
+			<TransactionDetail>
+				<Localization>
+					<LanguageCode>EN</LanguageCode>
+					<LocaleCode>US</LocaleCode>
+				</Localization>
+			</TransactionDetail>
+			<Version>
+				<ServiceId>trck</ServiceId>
+				<Major>9</Major>
+				<Intermediate>1</Intermediate>
+				<Minor>0</Minor>
+			</Version>
+			<CompletedTrackDetails>
+				<HighestSeverity>SUCCESS</HighestSeverity>
+				<Notifications>
+					<Severity>SUCCESS</Severity>
+					<Source>trck</Source>
+					<Code>0</Code>
+					<Message>Request was successfully processed.</Message>
+					<LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+				</Notifications>
+				<DuplicateWaybill>false</DuplicateWaybill>
+				<MoreData>false</MoreData>
+				<TrackDetailsCount>0</TrackDetailsCount>
+				<TrackDetails>
+					<Notification>
+						<Severity>SUCCESS</Severity>
+						<Source>trck</Source>
+						<Code>0</Code>
+						<Message>Request was successfully processed.</Message>
+						<LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+					</Notification>
+					<TrackingNumber>784010962852</TrackingNumber>
+					<TrackingNumberUniqueIdentifier>2457638000~784010962852~FX</TrackingNumberUniqueIdentifier>
+					<StatusDetail>
+						<CreationTime>2016-09-06T00:00:00</CreationTime>
+						<Code>CA</Code>
+						<Description>Shipment cancelled by sender</Description>
+						<Location>
+							<Residential>false</Residential>
+						</Location>
+						<AncillaryDetails>
+							<Reason>IN002</Reason>
+							<ReasonDescription>FedEx notified to void this shipment</ReasonDescription>
+						</AncillaryDetails>
+					</StatusDetail>
+					<ServiceCommitMessage>FedEx notified to void this shipment</ServiceCommitMessage>
+					<DestinationServiceArea>CA</DestinationServiceArea>
+					<CarrierCode>FDXE</CarrierCode>
+					<OperatingCompanyOrCarrierDescription>FedEx Express</OperatingCompanyOrCarrierDescription>
+					<OtherIdentifiers>
+						<PackageIdentifier>
+							<Type>SHIPPER_REFERENCE</Type>
+							<Value>TC#053</Value>
+						</PackageIdentifier>
+					</OtherIdentifiers>
+					<Service>
+						<Type>PRIORITY_OVERNIGHT</Type>
+						<Description>FedEx Priority Overnight</Description>
+						<ShortDescription>PO</ShortDescription>
+					</Service>
+					<PackageWeight>
+						<Units>LB</Units>
+						<Value>30.0</Value>
+					</PackageWeight>
+					<PackageDimensions>
+						<Length>20</Length>
+						<Width>15</Width>
+						<Height>20</Height>
+						<Units>IN</Units>
+					</PackageDimensions>
+					<ShipmentWeight>
+						<Units>LB</Units>
+						<Value>30.0</Value>
+					</ShipmentWeight>
+					<Packaging>Your Packaging</Packaging>
+					<PackagingType>YOUR_PACKAGING</PackagingType>
+					<PackageSequenceNumber>1</PackageSequenceNumber>
+					<PackageCount>1</PackageCount>
+					<SpecialHandlings>
+						<Type>DELIVER_WEEKDAY</Type>
+						<Description>Deliver Weekday</Description>
+						<PaymentType>OTHER</PaymentType>
+					</SpecialHandlings>
+					<ShipperAddress>
+						<City>Billings</City>
+						<StateOrProvinceCode>MT</StateOrProvinceCode>
+						<CountryCode>US</CountryCode>
+						<CountryName>United States</CountryName>
+						<Residential>false</Residential>
+					</ShipperAddress>
+					<DestinationAddress>
+						<City>Irvine</City>
+						<StateOrProvinceCode>CA</StateOrProvinceCode>
+						<CountryCode>US</CountryCode>
+						<CountryName>United States</CountryName>
+						<Residential>false</Residential>
+					</DestinationAddress>
+					<EstimatedDeliveryTimestamp>2016-09-07T10:30:00-07:00</EstimatedDeliveryTimestamp>
+					<DeliveryAttempts>0</DeliveryAttempts>
+					<TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+					<NotificationEventsAvailable>ON_DELIVERY</NotificationEventsAvailable>
+					<NotificationEventsAvailable>ON_EXCEPTION</NotificationEventsAvailable>
+					<DeliveryOptionEligibilityDetails>
+						<Option>INDIRECT_SIGNATURE_RELEASE</Option>
+						<Eligibility>INELIGIBLE</Eligibility>
+					</DeliveryOptionEligibilityDetails>
+					<DeliveryOptionEligibilityDetails>
+						<Option>REDIRECT_TO_HOLD_AT_LOCATION</Option>
+						<Eligibility>INELIGIBLE</Eligibility>
+					</DeliveryOptionEligibilityDetails>
+					<DeliveryOptionEligibilityDetails>
+						<Option>REROUTE</Option>
+						<Eligibility>INELIGIBLE</Eligibility>
+					</DeliveryOptionEligibilityDetails>
+					<DeliveryOptionEligibilityDetails>
+						<Option>RESCHEDULE</Option>
+						<Eligibility>INELIGIBLE</Eligibility>
+					</DeliveryOptionEligibilityDetails>
+					<Events>
+						<Timestamp>2016-09-06T18:04:31-05:00</Timestamp>
+						<EventType>CA</EventType>
+						<EventDescription>Shipment cancelled by sender</EventDescription>
+						<Address>
+							<Residential>false</Residential>
+						</Address>
+						<ArrivalLocation>CUSTOMER</ArrivalLocation>
+					</Events>
+				</TrackDetails>
+			</CompletedTrackDetails>
+		</TrackReply>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

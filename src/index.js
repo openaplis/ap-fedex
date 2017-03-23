@@ -20,11 +20,19 @@ function main() {
 }
 
 function setupMSSQLConfig() {
-  fs.readFile('/etc/secrets/mssql-config', 'utf8', function(err, config) {
-      if (err) throw err
-      var json = Buffer(config, 'base64').toString('utf-8')
-      sqlConnectionConfig = JSON.parse(json)
-  })
+  if(process.env.NODE_ENV='development') {
+    fs.readFile('../ap-secrets/mssql-config/mssql-config.txt', 'utf8', function(err, data) {
+        if (err) throw err
+        var json = Buffer(data, 'base64').toString('utf-8')        
+        console.log(json)
+    })
+  }
+  else {
+    fs.readFile('/etc/secrets/mssql-config', 'utf8', function(err, data) {
+        if (err) throw err
+        sqlConnectionConfig = JSON.parse(data)
+    })
+  }
 }
 
 function UpdateShipments(call, callback) {

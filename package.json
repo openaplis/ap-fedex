@@ -4,7 +4,9 @@
   "description": "ap-fedex",
   "main": "index.js",
   "dependencies": {
+    "ap-mysql": "0.0.30",
     "ap-protobuf": "^0.0.6",
+    "async": "^2.3.0",
     "dateformat": "^2.0.0",
     "grpc": "^1.2.0",
     "js-base64": "^2.1.9",

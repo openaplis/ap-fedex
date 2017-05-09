@@ -92,14 +92,14 @@ module.exports.update = function (data, callback) {
                     callback(null)
                   })
 
-              } else{
+              } else {
     						console.log('This status has not been handled yet: ' + trackingNumber.TrackingNumber + '/' + status)
                 callback(null)
     					}
             }
 
           ], function (err) {
-            if(err) callback(err)            
+            if(err) callback(err)
             callback(null, 'inner waterfall all done.')
           })
 

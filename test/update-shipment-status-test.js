@@ -1,7 +1,7 @@
 'use strict'
 
 const path = require('path')
-const updateShipmentStatus = require(path.join(__dirname, '../src/index')).updateShipmentStatus
+const updateShipmentStatus = require(path.join(__dirname, '../src/core/update-shipment-status'))
 
 describe('Update Shipment Status Tests', function() {
 

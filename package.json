@@ -16,8 +16,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "set NODE_ENV=production && node src/index.js",
-    "dev": "set NODE_ENV=development && node src/index.js"
+    "start": "set NODE_ENV=production && node src/start-service.js",
+    "dev": "set NODE_ENV=development && node src/start-service.js"
   },
   "repository": {
     "type": "git",

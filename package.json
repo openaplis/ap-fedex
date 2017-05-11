@@ -1,11 +1,11 @@
 {
   "name": "ap-fedex",
-  "version": "0.0.2",
+  "version": "0.0.17",
   "description": "ap-fedex",
-  "main": "index.js",
+  "main": "src/index.js",
   "dependencies": {
-    "ap-mysql": "0.0.30",
-    "ap-protobuf": "^0.0.6",
+    "ap-mysql": "*",
+    "ap-protobuf": "*",
     "async": "^2.3.0",
     "dateformat": "^2.0.0",
     "grpc": "^1.2.0",

@@ -10,8 +10,10 @@ const moment = require('moment')
 const cmdSubmitter = require('ap-mysql').cmdSubmitter
 const trackRequestTemplatePath = path.join(__dirname, 'track-request.xml')
 
-module.exports.update = function (data, callback) {
-  var sql = 'Select distinct TrackingNumber from tblTaskOrderDetail tod join tblTaskOrderDetailFedexShipment todf on tod.TaskOrderDetailId = todf.TaskOrderDetailid where tod.Acknowledged = 0 and todf.TrackingNumber is not null';
+module.exports.update = function (callback) {
+  var sql = ['Select distinct todf.TrackingNumber, t.ReportNo ',
+    'from tblTaskOrderDetail tod join tblTaskOrderDetailFedexShipment todf on tod.TaskOrderDetailId = todf.TaskOrderDetailid ',
+    'join tblTaskOrder t on tod.TaskOrderid = t.TaskOrderId where tod.Acknowledged = 0 and todf.TrackingNumber is not null'].join('\n')
 
   async.waterfall([
 
@@ -49,7 +51,7 @@ module.exports.update = function (data, callback) {
             		},
             		body: trackingRequest
             	}, function (err, response, body) {
-                console.log('Got a response for: ' + trackingNumber.TrackingNumber)
+                console.log('Got a response from Fedex for: ' + trackingNumber.ReportNo + ':' + trackingNumber.TrackingNumber)
             		callback(null, response.body)
             	})
             },
@@ -65,7 +67,7 @@ module.exports.update = function (data, callback) {
             		}	else {
             			statusCode = statusDetail.Code[0]
             		}
-                console.log('Found code: ' + statusCode)
+                console.log('Fedex returned code: ' + statusCode)
                 callback(null, statusCode)
             	})
             },
@@ -88,12 +90,12 @@ module.exports.update = function (data, callback) {
 
                   cmdSubmitter.submit(sqlUpdate.join(' '), function (err) {
                     if(err) return callback(err)
-                    console.log('Updated mysql rows for: ' + trackingNumber.TrackingNumber)
+                    console.log('Updated task for: ' + trackingNumber.ReportNo)
                     callback(null)
                   })
 
               } else {
-    						console.log('This status has not been handled yet: ' + trackingNumber.TrackingNumber + '/' + status)
+    						console.log('You might want to check: ' + trackingNumber.ReportNo + '/' + status)
                 callback(null)
     					}
             }
@@ -112,7 +114,7 @@ module.exports.update = function (data, callback) {
 
   ], function (err) {
     if(err) return callback(err)
-    callback(null, 'All done.')
+    callback(null, 'Shipment status update complete.')
   })
 
 }

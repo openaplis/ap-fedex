@@ -1,21 +1,26 @@
-var grpc = require('grpc')
+'use static'
 
-var PROTO_PATH = './src/core/fedex.proto'
+var path = require('path')
+var grpc = require('grpc')
+var path = require('path')
+
+var updateShipmentStatus = require(path.join(__dirname, 'update-shipment-status'))
+
+var PROTO_PATH = path.join(__dirname, 'fedex.proto')
 var protobuf = grpc.load(PROTO_PATH).fedex
-var port = 50052
 var server = {};
 
 module.exports = {
 
   start: function (callback) {
     server = new grpc.Server()
-    server.addProtoService(protobuf.FedexService.service, { ping: ping })
+    server.addProtoService(protobuf.FedexService.service, { ping: ping, updateShipments: updateShipments })
     server.bind('0.0.0.0:50052', grpc.ServerCredentials.createInsecure())
     server.start()
 
     callback(null, {
       message: 'The Fedex service has started.',
-      port: port
+      port: '50052'
     })
   },
 
@@ -29,4 +34,10 @@ module.exports = {
 
 function ping (call, callback) {
   callback(null, { message: 'I recieved this message: ' + call.request.message } )
+}
+
+function updateShipments (call, callback) {
+  updateShipmentStatus.update(function (err, result) {    
+    callback(null, { message: result } )
+  })
 }

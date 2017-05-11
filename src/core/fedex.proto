@@ -4,6 +4,15 @@ package fedex;
 
 service FedexService {
   rpc Ping (PingRequest) returns (PingReply) {};
+  rpc UpdateShipments (UpdateShipmentRequest) returns (UpdateShipmentReply) {};
+}
+
+message UpdateShipmentRequest {
+  string message = 1;
+}
+
+message UpdateShipmentReply {
+  string message = 1;
 }
 
 message PingRequest {

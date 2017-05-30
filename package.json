@@ -1,23 +1,21 @@
 {
   "name": "ap-fedex",
-  "version": "0.0.17",
+  "version": "0.0.19",
   "description": "ap-fedex",
   "main": "src/index.js",
   "dependencies": {
-    "ap-mysql": "*",
     "ap-protobuf": "*",
     "async": "^2.3.0",
     "dateformat": "^2.0.0",
-    "grpc": "^1.2.0",
+    "grpc": "^1.3.2",
     "js-base64": "^2.1.9",
-    "mssql": "^3.3.0",
+    "moment": "^2.18.1",
     "request": "^2.81.0",
     "xml2js": "^0.4.17"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "set NODE_ENV=production && node src/start-service.js",
-    "dev": "set NODE_ENV=development && node src/start-service.js"
+    "start-service": "node src/start-service.js"
   },
   "repository": {
     "type": "git",

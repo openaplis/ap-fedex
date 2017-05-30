@@ -6,26 +6,32 @@ const fs = require('fs')
 const xml2js = require('xml2js')
 const request = require('request')
 const moment = require('moment')
+const grpc = require('grpc')
 
-const cmdSubmitter = require('ap-mysql').cmdSubmitter
 const trackRequestTemplatePath = path.join(__dirname, 'track-request.xml')
 
+const PROTO_PATH = path.join(__dirname, '../../node_modules/ap-protobuf/src/core/mysql/mysql-service.proto')
+const mysql_proto = grpc.load(PROTO_PATH).mysql
+const mysqlService = new mysql_proto.MysqlService(process.env.AP_MYSQL_SERVICE_BINDING, grpc.credentials.createInsecure())
+
+var shipmentStatuList = []
+
 module.exports.update = function (callback) {
-  var sql = ['Select distinct todf.TrackingNumber, t.ReportNo ',
-    'from tblTaskOrderDetail tod join tblTaskOrderDetailFedexShipment todf on tod.TaskOrderDetailId = todf.TaskOrderDetailid ',
-    'join tblTaskOrder t on tod.TaskOrderid = t.TaskOrderId where tod.Acknowledged = 0 and todf.TrackingNumber is not null'].join('\n')
 
   async.waterfall([
 
     function (callback) {
-      cmdSubmitter.submit(sql, function (err, trackingNumbers) {
+      mysqlService.getUnacknowledgedTrackingNumbers("No Message", function (err, trackingNumbers) {
         if(err) return callback(err)
         callback(null, trackingNumbers)
       })
     },
 
-    function (trackingNumbers, callback) {
-      async.eachSeries(trackingNumbers, function (trackingNumber, callback) {
+    function (result, callback) {
+      async.eachSeries(result.trackingNumbers, function (trackingNumber, callback) {
+        var shipmentStatus = { trackingNumber: trackingNumber.trackingNumber, reportNo: trackingNumber.reportNo }
+        shipmentStatuList.push(shipmentStatus)
+
         fs.readFile(trackRequestTemplatePath, function (err, requestTemplate) {
           if(err) return callback(err)
 
@@ -34,7 +40,7 @@ module.exports.update = function (callback) {
             // create the tracking request
             function (callback) {
               xml2js.parseString(requestTemplate, function (err, result) {
-                result['soapenv:Envelope']['soapenv:Body'][0]['v9:TrackRequest'][0]['v9:SelectionDetails'][0]['v9:PackageIdentifier'][0]['v9:Value'][0] = trackingNumber.TrackingNumber
+                result['soapenv:Envelope']['soapenv:Body'][0]['v9:TrackRequest'][0]['v9:SelectionDetails'][0]['v9:PackageIdentifier'][0]['v9:Value'][0] = trackingNumber.trackingNumber
                 var builder = new xml2js.Builder()
                 var trackingRequest = builder.buildObject(result)
                 callback(null, trackingRequest)
@@ -51,7 +57,7 @@ module.exports.update = function (callback) {
             		},
             		body: trackingRequest
             	}, function (err, response, body) {
-                console.log('Got a response from Fedex for: ' + trackingNumber.ReportNo + ':' + trackingNumber.TrackingNumber)
+                console.log('Got a response from Fedex for: ' + trackingNumber.reportNo + ':' + trackingNumber.trackingNumber)
             		callback(null, response.body)
             	})
             },
@@ -74,28 +80,19 @@ module.exports.update = function (callback) {
 
             // acknowledge the Task
             function (status, callback) {
+              shipmentStatus.status = status
               if(status == 'DL' || status == 'DE' || status == 'SL' || status == 'FD' || status == 'SF' || status == 'OD' || status == 'HL' || status == 'PU') {
-                var acknowledgedDate = moment().format('YYYY-MM-DD HH:mm:ss')
-                var sqlUpdate = [
-                    'Update tblTaskOrderDetail tod',
-                    'inner join tblTaskOrderDetailFedexShipment todf on  tod.TaskOrderDetailId = todf.TaskOrderDetailId',
-                    'Set tod.Acknowledged = 1, tod.AcknowledgedbyId = 5134, tod.AcknowledgedByInitials = \'OP\', tod.AcknowledgedDate = \'' + acknowledgedDate + '\'',
-                    'where todf.TrackingNumber = \'' + trackingNumber.TrackingNumber + '\';',
-                    'Update tblTaskOrder t',
-                    'inner join tblTaskOrderDetail tod on t.TaskOrderId = tod.TaskOrderId',
-                    'inner join tblTaskOrderDetailFedexShipment todf on tod.TaskOrderDetailId = todf.TaskOrderDetailId',
-                    'Set t.Acknowledged = 1, t.AcknowledgedbyId = 5134, t.AcknowledgedByInitials = \'OP\', t.AcknowledgedDate = \'' + acknowledgedDate + '\'',
-                    'where todf.TrackingNumber = \'' + trackingNumber.TrackingNumber + '\';'
-                  ]
-
-                  cmdSubmitter.submit(sqlUpdate.join(' '), function (err) {
+                var acknowledgeDate = moment().format('YYYY-MM-DD HH:mm:ss')
+                  mysqlService.acknowledgeTaskOrder({ acknowledgeDate: acknowledgeDate, trackingNumber: trackingNumber.trackingNumber }, function (err) {
                     if(err) return callback(err)
                     console.log('Updated task for: ' + trackingNumber.ReportNo)
+                    shipmentStatus.acknowledged = true
                     callback(null)
                   })
 
               } else {
-    						console.log('You might want to check: ' + trackingNumber.ReportNo + '/' + status)
+                shipmentStatus.acknowledged = false
+    						console.log('You might want to check: ' + trackingNumber.reportNo + '/' + status)
                 callback(null)
     					}
             }
@@ -114,7 +111,7 @@ module.exports.update = function (callback) {
 
   ], function (err) {
     if(err) return callback(err)
-    callback(null, 'Shipment status update complete.')
+    callback(null, shipmentStatuList)
   })
 
 }

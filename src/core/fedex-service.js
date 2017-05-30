@@ -1,26 +1,27 @@
 'use static'
 
-var path = require('path')
 var grpc = require('grpc')
 var path = require('path')
 
 var updateShipmentStatus = require(path.join(__dirname, 'update-shipment-status'))
-
-var PROTO_PATH = path.join(__dirname, 'fedex.proto')
+var PROTO_PATH = path.join(__dirname, '../../node_modules/ap-protobuf/src/core/fedex/fedex-service.proto')
 var protobuf = grpc.load(PROTO_PATH).fedex
-var server = {};
+var server = {}
 
 module.exports = {
 
   start: function (callback) {
     server = new grpc.Server()
-    server.addProtoService(protobuf.FedexService.service, { ping: ping, updateShipments: updateShipments })
-    server.bind('0.0.0.0:50052', grpc.ServerCredentials.createInsecure())
+    server.addService(protobuf.FedexService.service,
+      {
+        updateShipments: updateShipments
+      })
+    server.bind(process.env.AP_FEDEX_SERVICE_BINDING, grpc.ServerCredentials.createInsecure())
     server.start()
 
     callback(null, {
       message: 'The Fedex service has started.',
-      port: '50052'
+      serviceBinding: process.env.AP_FEDEX_SERVICE_BINDING
     })
   },
 
@@ -32,12 +33,9 @@ module.exports = {
 
 }
 
-function ping (call, callback) {
-  callback(null, { message: 'I recieved this message: ' + call.request.message } )
-}
-
 function updateShipments (call, callback) {
-  updateShipmentStatus.update(function (err, result) {    
-    callback(null, { message: result } )
+  updateShipmentStatus.update(function (err, result) {
+    if(err) return callback(err)
+    callback(null, result)
   })
 }

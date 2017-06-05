@@ -14,10 +14,8 @@ const PROTO_PATH = path.join(__dirname, '../../node_modules/ap-protobuf/src/core
 const mysql_proto = grpc.load(PROTO_PATH).mysql
 const mysqlService = new mysql_proto.MysqlService(process.env.AP_MYSQL_SERVICE_BINDING, grpc.credentials.createInsecure())
 
-var shipmentStatuList = []
-
 module.exports.update = function (callback) {
-
+  var shipmentStatuList = []
   async.waterfall([
 
     function (callback) {

@@ -83,12 +83,12 @@ module.exports.update = function (callback) {
               shipmentStatus.status = status
               if(status == 'DL' || status == 'DE' || status == 'SL' || status == 'FD' || status == 'SF' || status == 'OD' || status == 'HL' || status == 'PU') {
                 var acknowledgeDate = moment().format('YYYY-MM-DD HH:mm:ss')
-                  mysqlService.acknowledgeTaskOrder({ acknowledgeDate: acknowledgeDate, trackingNumber: trackingNumber.trackingNumber }, function (err) {
-                    if(err) return callback(err)
-                    console.log('Updated task for: ' + trackingNumber.ReportNo)
-                    shipmentStatus.acknowledged = true
-                    callback(null)
-                  })
+                mysqlService.acknowledgeTaskOrder({ acknowledgeDate: acknowledgeDate, trackingNumber: trackingNumber.trackingNumber }, function (err) {
+                  if(err) return callback(err)
+                  console.log('Updated task for: ' + trackingNumber.ReportNo)
+                  shipmentStatus.acknowledged = true
+                  callback(null)
+                })
 
               } else {
                 shipmentStatus.acknowledged = false

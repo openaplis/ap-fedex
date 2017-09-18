@@ -6,7 +6,7 @@ const updateShipmentStatus = require(path.join(__dirname, '../src/core/update-sh
 describe('Update Shipment Status Tests', function() {
 
   describe('update', function() {
-    this.timeout(20000);
+    this.timeout(50000)
     it('Whats up', function(done) {
       updateShipmentStatus.update(function (err, result) {
         if(err) return console.log(err)

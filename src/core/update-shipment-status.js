@@ -6,29 +6,36 @@ const fs = require('fs')
 const xml2js = require('xml2js')
 const request = require('request')
 const moment = require('moment')
-const grpc = require('grpc')
 
 const trackRequestTemplatePath = path.join(__dirname, 'track-request.xml')
 
-const PROTO_PATH = path.join(__dirname, '../../node_modules/ap-protobuf/src/core/mysql/mysql-service.proto')
-const mysql_proto = grpc.load(PROTO_PATH).mysql
-const mysqlService = new mysql_proto.MysqlService(process.env.AP_MYSQL_SERVICE_BINDING, grpc.credentials.createInsecure())
+const grpc = require('grpc')
+const PROTO_PATH = path.join(__dirname, '../../node_modules/ap-protobuf/src/core/gateway.proto')
+const gateway_proto = grpc.load(PROTO_PATH).gateway
+const mysqlGateway = new gateway_proto.MySQLGateway(process.env.AP_GATEWAY_SERVICE_BINDING, grpc.credentials.createInsecure())
 
 module.exports.update = function (callback) {
-  var shipmentStatuList = []
+  var shipmentStatusList = []
   async.waterfall([
 
     function (callback) {
-      mysqlService.getUnacknowledgedTrackingNumbers("No Message", function (err, trackingNumbers) {
-        if(err) return callback(err)
+      var cmdSubmitterRequest = {
+        sql: ['Select distinct todf.trackingNumber, t.reportNo ',
+          'from tblTaskOrderDetail tod join tblTaskOrderDetailFedexShipment todf on tod.TaskOrderDetailId = todf.TaskOrderDetailid ',
+          'join tblTaskOrder t on tod.TaskOrderid = t.TaskOrderId where tod.Acknowledged = 0 and todf.TrackingNumber is not null'].join('\n')
+      }
+
+      mysqlGateway.submitCmd(cmdSubmitterRequest, function (err, result) {
+        if (err) return callback(err)
+        var trackingNumbers = JSON.parse(result.json)
         callback(null, trackingNumbers)
       })
     },
 
-    function (result, callback) {
-      async.eachSeries(result.trackingNumbers, function (trackingNumber, callback) {
+    function (trackingNumbers, callback) {
+      async.eachSeries(trackingNumbers, function (trackingNumber, callback) {
         var shipmentStatus = { trackingNumber: trackingNumber.trackingNumber, reportNo: trackingNumber.reportNo }
-        shipmentStatuList.push(shipmentStatus)
+        shipmentStatusList.push(shipmentStatus)
 
         fs.readFile(trackRequestTemplatePath, function (err, requestTemplate) {
           if(err) return callback(err)
@@ -55,44 +62,83 @@ module.exports.update = function (callback) {
             		},
             		body: trackingRequest
             	}, function (err, response, body) {
-                console.log('Got a response from Fedex for: ' + trackingNumber.reportNo + ':' + trackingNumber.trackingNumber)
+                //console.log('Got a response from Fedex for: ' + trackingNumber.reportNo + ':' + trackingNumber.trackingNumber)
             		callback(null, response.body)
             	})
             },
 
-            // Get the status code from the response
+            // Get the track details from the response
             function (trackingRequestResponse, callback) {
               xml2js.parseString(trackingRequestResponse, function (err, result) {
                 if(err) return callback(err)
-            		var statusDetail = result['SOAP-ENV:Envelope']['SOAP-ENV:Body'][0]['TrackReply'][0]['CompletedTrackDetails'][0]['TrackDetails'][0]['StatusDetail'][0]
-                var statusCode = ''
-            		if(statusDetail.Code == null) {
-                  statusCode = 'NOCODESENT'
-            		}	else {
-            			statusCode = statusDetail.Code[0]
-            		}
-                console.log('Fedex returned code: ' + statusCode)
-                callback(null, statusCode)
+            		var trackDetails = result['SOAP-ENV:Envelope']['SOAP-ENV:Body'][0]['TrackReply'][0]['CompletedTrackDetails'][0]['TrackDetails'][0]
+
+                var requestStatus = trackDetails.Notification[0]['Code'][0]
+                if(requestStatus != '0') {
+                  shipmentStatus.status = trackDetails.Notification[0]['Code'][0] + ': ' + trackDetails.Notification[0]['Message'][0]
+                } else {
+                  shipmentStatus.status = trackDetails.StatusDetail[0]['Code'][0] + ': ' + trackDetails.StatusDetail[0]['Description'][0]
+                }
+
+                callback(null, trackDetails)
             	})
             },
 
-            // acknowledge the Task
-            function (status, callback) {
-              shipmentStatus.status = status
-              if(status == 'DL' || status == 'DE' || status == 'SL' || status == 'FD' || status == 'SF' || status == 'OD' || status == 'HL' || status == 'PU') {
+            // acknowledge the Task if appropriate
+            function (trackDetails, callback) {
+              if(trackDetails.Notification[0]['Code'][0] == '0' && trackDetails.StatusDetail[0]['Code'][0] != 'OC') {
                 var acknowledgeDate = moment().format('YYYY-MM-DD HH:mm:ss')
-                mysqlService.acknowledgeTaskOrder({ acknowledgeDate: acknowledgeDate, trackingNumber: trackingNumber.trackingNumber }, function (err) {
-                  if(err) return callback(err)
-                  console.log('Updated task for: ' + trackingNumber.ReportNo)
-                  shipmentStatus.acknowledged = true
-                  callback(null)
-                })
+
+                  var cmdSubmitterRequest = {
+                    sql: [
+                        'Update tblTaskOrderDetail tod',
+                        'inner join tblTaskOrderDetailFedexShipment todf on  tod.TaskOrderDetailId = todf.TaskOrderDetailId',
+                        'Set tod.Acknowledged = 1, tod.AcknowledgedbyId = 5134, tod.AcknowledgedByInitials = \'OP\', tod.AcknowledgedDate = \'' + acknowledgeDate + '\'',
+                        'where todf.TrackingNumber = \'' + trackingNumber.trackingNumber + '\';',
+                        'Update tblTaskOrder t',
+                        'inner join tblTaskOrderDetail tod on t.TaskOrderId = tod.TaskOrderId',
+                        'inner join tblTaskOrderDetailFedexShipment todf on tod.TaskOrderDetailId = todf.TaskOrderDetailId',
+                        'Set t.Acknowledged = 1, t.AcknowledgedbyId = 5134, t.AcknowledgedByInitials = \'OP\', t.AcknowledgedDate = \'' + acknowledgeDate + '\'',
+                        'where todf.TrackingNumber = \'' + trackingNumber.trackingNumber + '\';'
+                      ].join('\n')
+                  }
+
+                  mysqlGateway.submitCmd(cmdSubmitterRequest, function (err, result) {
+                    if(err) return callback(err)
+                    console.log('Updated task for: ' + trackingNumber.ReportNo)
+                    shipmentStatus.acknowledged = true
+                    callback(null, trackDetails)
+                  })
 
               } else {
                 shipmentStatus.acknowledged = false
-    						console.log('You might want to check: ' + trackingNumber.reportNo + '/' + status)
-                callback(null)
+                callback(null, trackDetails)
     					}
+            },
+
+            // finalize Ship material Test Orders if appropriate
+            function (trackDetails, callback) {
+              if(trackDetails.Notification[0]['Code'][0] == '0' && trackDetails.StatusDetail[0]['Code'][0] != 'OC') {
+                var finalTime = moment().format('YYYY-MM-DD')
+                var finalDate = moment().format('YYYY-MM-DD HH:mm:ss')
+
+                var cmdSubmitterRequest = {
+                  sql: [
+                    'Update tblPanelSetOrder Set Final = 1, FinalDate = \'' + finalDate + '\', FinalTime = \'' + finalTime + '\', ',
+                    'AssignedToId = 5134, Signature = \'Auto Signature\' where ReportNo = \'' + trackingNumber.reportNo + '\' ',
+                    'and panelSetId = 244 '
+                  ].join('\n')
+                }
+
+                mysqlGateway.submitCmd(cmdSubmitterRequest, function (err, result) {
+                  var resultObj = JSON.parse(result.json)
+                  console.log('Finalize ShipMaterial Test Orders Rows affected: ' + resultObj[0].affectedRows)
+                  if(err) return callback(err)
+                  callback(null, trackDetails)
+                })
+              } else {
+                callback(null, trackDetails)
+              }
             }
 
           ], function (err) {
@@ -109,7 +155,7 @@ module.exports.update = function (callback) {
 
   ], function (err) {
     if(err) return callback(err)
-    callback(null, shipmentStatuList)
+    callback(null, shipmentStatusList)
   })
 
 }

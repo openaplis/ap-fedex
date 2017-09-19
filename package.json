@@ -1,6 +1,6 @@
 {
   "name": "ap-fedex",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "ap-fedex",
   "main": "src/index.js",
   "dependencies": {

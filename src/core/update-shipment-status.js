@@ -61,8 +61,7 @@ module.exports.update = function (callback) {
             			"content-type": "application/xml",
             		},
             		body: trackingRequest
-            	}, function (err, response, body) {
-                //console.log('Got a response from Fedex for: ' + trackingNumber.reportNo + ':' + trackingNumber.trackingNumber)
+            	}, function (err, response, body) {                
             		callback(null, response.body)
             	})
             },
@@ -72,21 +71,14 @@ module.exports.update = function (callback) {
               xml2js.parseString(trackingRequestResponse, function (err, result) {
                 if(err) return callback(err)
             		var trackDetails = result['SOAP-ENV:Envelope']['SOAP-ENV:Body'][0]['TrackReply'][0]['CompletedTrackDetails'][0]['TrackDetails'][0]
-
-                var requestStatus = trackDetails.Notification[0]['Code'][0]
-                if(requestStatus != '0') {
-                  shipmentStatus.status = trackDetails.Notification[0]['Code'][0] + ': ' + trackDetails.Notification[0]['Message'][0]
-                } else {
-                  shipmentStatus.status = trackDetails.StatusDetail[0]['Code'][0] + ': ' + trackDetails.StatusDetail[0]['Description'][0]
-                }
-
+                shipmentStatus.status = trackDetails.Notification[0]['Code'][0] + ': ' + trackDetails.Notification[0]['Message'][0]
                 callback(null, trackDetails)
             	})
             },
 
             // acknowledge the Task if appropriate
             function (trackDetails, callback) {
-              if(trackDetails.Notification[0]['Code'][0] == '0' && trackDetails.StatusDetail[0]['Code'][0] != 'OC') {
+              if(trackDetails.Notification[0]['Code'][0] == '0' && trackDetails.Notification[0]['Code'][0] != 'OC') {
                 var acknowledgeDate = moment().format('YYYY-MM-DD HH:mm:ss')
 
                   var cmdSubmitterRequest = {
@@ -118,7 +110,7 @@ module.exports.update = function (callback) {
 
             // finalize Ship material Test Orders if appropriate
             function (trackDetails, callback) {
-              if(trackDetails.Notification[0]['Code'][0] == '0' && trackDetails.StatusDetail[0]['Code'][0] != 'OC') {
+              if(trackDetails.Notification[0]['Code'][0] == '0' && trackDetails.Notification[0]['Code'][0] != 'OC') {
                 var finalTime = moment().format('YYYY-MM-DD')
                 var finalDate = moment().format('YYYY-MM-DD HH:mm:ss')
 
@@ -140,7 +132,6 @@ module.exports.update = function (callback) {
                 callback(null, trackDetails)
               }
             }
-
           ], function (err) {
             if(err) callback(err)
             callback(null, 'inner waterfall all done.')
@@ -157,5 +148,4 @@ module.exports.update = function (callback) {
     if(err) return callback(err)
     callback(null, shipmentStatusList)
   })
-
 }

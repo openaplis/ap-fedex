@@ -33,7 +33,7 @@ module.exports = {
 
 }
 
-function updateShipments (call, callback) {
+function updateShipments (call, callback) {  
   updateShipmentStatus.update(function (err, result) {
     if(err) return callback(err)
     callback(null, result)

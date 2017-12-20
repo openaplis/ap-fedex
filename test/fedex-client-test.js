@@ -7,6 +7,6 @@ const fedexService = new fedex_proto.FedexService(process.env.AP_FEDEX_SERVICE_B
 console.log('Connecting to: ' + process.env.AP_FEDEX_SERVICE_BINDING)
 
 fedexService.updateShipments({ message: 'null'}, function (err, message) {
-  if(err) return console.log(err)
+  if(err) return console.log(err)  
   console.log(message)
 })
